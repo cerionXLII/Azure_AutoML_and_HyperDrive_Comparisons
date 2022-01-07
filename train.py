@@ -8,6 +8,7 @@ from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import OneHotEncoder
 import pandas as pd
 from azureml.core.run import Run
+from azureml.core import Dataset
 from azureml.data.dataset_factory import TabularDatasetFactory
 
 def clean_data(data):
@@ -41,32 +42,42 @@ def main():
     # Add arguments to script
     parser = argparse.ArgumentParser()
 
+    # Set argument defaults and parse values
     parser.add_argument('--C', type=float, default=1.0, help="Inverse of regularization strength. Smaller values cause stronger regularization")
     parser.add_argument('--max_iter', type=int, default=100, help="Maximum number of iterations to converge")
+    parser.add_argument('--random_state', type=int, default=42, help="Random state")
+    parser.add_argument('--model_save_path', type=str, default="outputs/model.joblib", help="Path to where the model is saved to")
 
     args = parser.parse_args()
 
     run = Run.get_context()
 
+    # Log current argument values
     run.log("Regularization Strength:", np.float(args.C))
     run.log("Max iterations:", np.int(args.max_iter))
+    run.log("Random state:", np.int(args.random_state))
+    run.log("Model save path:", args.model_save_path)
 
-    # TODO: Create TabularDataset using TabularDatasetFactory
-    # Data is located at:
-    # "https://automlsamplenotebookdata.blob.core.windows.net/automl-sample-notebook-data/bankmarketing_train.csv"
+    # Download data
+    path = "https://automlsamplenotebookdata.blob.core.windows.net/automl-sample-notebook-data/bankmarketing_train.csv"
 
-    ds = ### YOUR CODE HERE ###
+    ds = Dataset.Tabular.from_delimited_files(path=path)
     
+    # Clean data and extract features and targets
     x, y = clean_data(ds)
 
-    # TODO: Split data into train and test sets.
+    # Split the data into train and test sets, ussing a random seed
+    x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=0.2, random_state=args.random_state)
 
-    ### YOUR CODE HERE ###a
+    # Create model and fit to training data
+    model = LogisticRegression(C=args.C, max_iter=args.max_iter, random_state=args.random_state).fit(x_train, y_train)
 
-    model = LogisticRegression(C=args.C, max_iter=args.max_iter).fit(x_train, y_train)
-
+    # Validate accuracy using test set data
     accuracy = model.score(x_test, y_test)
     run.log("Accuracy", np.float(accuracy))
+    joblib.dump(model, args.model_save_path)
 
 if __name__ == '__main__':
     main()
+
+
