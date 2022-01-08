@@ -65,4 +65,4 @@ Any future experiments would expand the search space for the Scikit-learn HyperD
 When it comes to AutoML we set constraints on maximum running time. A next step would be to allow it to run for a bit longer and see what it can come up with. How much would we gain in accuracy if we allowed the experiment to run twice as long for example?
 
 ## Cluster clean up
-In this experiment a 'private' Azure ML Cluster was used. Hence it was not clearned up in this notebook. If running the experiment on your own, make sure to switch the clusters off, or clean them up all together in order to save costs.
+In order to save costs. The cluster was deleted at the end of the notebook.
