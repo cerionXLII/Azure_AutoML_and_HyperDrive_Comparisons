@@ -35,6 +35,23 @@ The stopping policy was a simple BanditPolicy. It terminates the run if the prim
 ## AutoML
 The Azure AutoML was set up and did run on the same dataset. It did a search between different machine learning models and scalers. The best model found was a VotingEnsemble. When looking at the different models within the ensemble we could find that it used a combination of XGBoostClassifiers and LightGBMClassifiers. The different classifiers scaled the input data a little bit differently, with StandardScaler and MaxAbsScaler as main tools.
 
+### Inputs to AutoML
+There are a number of inputs we need to specify in order to run the AutoML. Here is an example of the inputs used, with a short description of each.
+
+```python
+automl_config = AutoMLConfig(
+    experiment_timeout_minutes=30,      #The maximum allowed time for the experiment in minutes
+    task='classification',              #This is a classification task. Other options would be regression or forecasting
+    primary_metric='accuracy',          #We want to maximize the accuracy of the model, could also be for example RMS
+    training_data=trainingDataTabular,  #Tabular input data set
+    label_column_name='y',              #The target name wtithin the training_data set
+    n_cross_validations=3,              #How many folds we use in cross validation
+    test_size=0.2,                      #How much of the available data we use for testing the model accuracy. For each fold say for example 20% of the data is used for validation
+    enable_early_stopping=True,         #If we want to stop a model training run if it is obvious that the primary metric does not improve. Saves time
+    compute_target=aml_compute)         #The cluster we use during the compute
+```
+[AutoML parameter documetiation](https://docs.microsoft.com/en-us/azure/machine-learning/how-to-configure-auto-train).
+
 ## Pipeline comparison
 When comparing the two methods, it is clear that we can run many more experiments using AutoML, given the same amount of time and resources. The HyperDrive is a good tool when you already have a sense of the model you want to use and which hyper parameters to optimize for.
 
